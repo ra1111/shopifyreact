@@ -1,0 +1,26 @@
+.menu {
+    display: flex;
+    justify-content: space-around;  /* Distributes items with equal space around them */
+    align-items: center; 
+    width: calc(100% - 40px);  /* Adjust width to account for margins */
+    padding: 10px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    margin: 0 20px; 
+}
+
+.menu-item, .menu button {
+    text-align: center; 
+    padding: 10px 20px;  
+    cursor: pointer;  
+    transition: background-color 0.3s ease;  
+}
+
+.menu-item:hover, .menu button:hover {
+    background-color: #e0e0e0;
+}
+
+.menu .active {
+    border-bottom: 2px solid #0077b6;
+}
+
+  

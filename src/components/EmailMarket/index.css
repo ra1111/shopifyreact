@@ -1,25 +1,24 @@
-.App {
+.EmailMarketing {
     display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* Ensures the container takes at least the full height of the viewport */
-    font-family: 'Arial', sans-serif;
-    box-sizing: border-box;
-  }
-
-  .content {
-    flex: 1; /* Allows content to occupy the remaining height */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* Aligns the content to the top */
+    justify-content: center;
     padding: 20px;
+    box-sizing: border-box;
   }
   
   .input-side, .output-side {
     flex: 1;
     padding: 20px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     border: 1px solid #e0e0e0;
     margin: 0 10px;
+  }
+  
+  .input-side textarea, .output-side textarea {
+    flex: 1;
+    margin-top: 10px;
   }
   
   label {
@@ -39,23 +38,7 @@
   }
   
   textarea {
-    height: 200px;
     resize: vertical;
-  }
-  
-  .tags-display {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 10px;
-  }
-  
-  .tag {
-    padding: 5px 10px;
-    background-color: #0077b6;
-    color: white;
-    border-radius: 15px;
-    margin-right: 5px;
-    margin-bottom: 5px;
   }
   
   button {

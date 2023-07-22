@@ -1,23 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import Menu, { SECTIONS } from './components/Menu';
+import ProductDescription from './components/ProductDescription';
+import EmailMarketing from './components/EmailMarket';
+import SocialPostGenerator from './components/Ads';
+import AIImprover from './components/writerAssistant';
+import SEOTitleGenerator from './components/SEO';
+import SEODescriptionGenerator from './components/SEODescription';
+import ProductNameGenerator from './components/ProductNameGenerator';
+import ProductBenefitGenerator from './components/ProductBenifit';
+// Import other components
+// import ProductPage from './ProductPage';
+// ... 
 
 function App() {
+  const [currentSection, setCurrentSection] = useState(SECTIONS.PRODUCT_DESCRIPTION);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Menu currentSection={currentSection} onSectionChange={setCurrentSection} />
+
+      <div className="content">
+        {currentSection === SECTIONS.PRODUCT_DESCRIPTION && <ProductDescription />}
+        {currentSection === SECTIONS.PRODUCT_NAME && <ProductNameGenerator />}
+        {currentSection==SECTIONS.PRODUCT_BENEFITS&&<ProductBenefitGenerator/>}
+        {currentSection === SECTIONS.EMAIL_MARKET && <EmailMarketing />}
+        {currentSection === SECTIONS.ADS && <SocialPostGenerator />}
+        {currentSection === SECTIONS.WRITER_ASSITANT && <AIImprover />}
+        {currentSection===SECTIONS.SEO_TITLE&&<SEOTitleGenerator/>}
+        {currentSection===SECTIONS.SEO_DESCRIPTION&&<SEODescriptionGenerator/>}
+        {/* Render other components based on the currentSection */}
+      </div>
     </div>
   );
 }

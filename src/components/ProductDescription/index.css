@@ -1,0 +1,80 @@
+.ProductDescription {
+  display: flex;
+  justify-content: center;
+
+  font-family: 'Arial', sans-serif;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.input-side, .output-side {
+  flex: 1;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex; /* This is added so we can flex-direction: column; */
+  flex-direction: column; /* This makes it stack vertically */
+  justify-content: space-between; /* This will space out your content */
+  border: 1px solid #e0e0e0;
+  margin: 0 10px;
+}
+/* Specific styling for the textareas to make them expand */
+.input-side textarea, .output-side textarea {
+  flex: 1; /* This allows it to expand and take up space */
+  margin-top: 10px;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+textarea {
+  height: 200px;
+  resize: vertical;
+}
+
+.tags-display {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.tag {
+  padding: 5px 10px;
+  background-color: #0077b6;
+  color: white;
+  border-radius: 15px; /* Makes it oval-shaped */
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #0077b6;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 20px;
+}
+
+button:hover {
+  background-color: #00508a;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
