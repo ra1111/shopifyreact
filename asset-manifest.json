@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/shopifyreact/static/css/main.fd45d5d6.css",
+    "main.js": "/shopifyreact/static/js/main.7c00ad73.js",
+    "static/js/787.69e76c70.chunk.js": "/shopifyreact/static/js/787.69e76c70.chunk.js",
+    "index.html": "/shopifyreact/index.html",
+    "main.fd45d5d6.css.map": "/shopifyreact/static/css/main.fd45d5d6.css.map",
+    "main.7c00ad73.js.map": "/shopifyreact/static/js/main.7c00ad73.js.map",
+    "787.69e76c70.chunk.js.map": "/shopifyreact/static/js/787.69e76c70.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.fd45d5d6.css",
+    "static/js/main.7c00ad73.js"
+  ]
+}
