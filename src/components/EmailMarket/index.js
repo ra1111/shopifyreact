@@ -24,8 +24,9 @@ function EmailMarketing() {
             requestType: "email",
            data: dataToSend
           
-        },{headers: {"Access-Control-Allow-Origin": "*"}});
+        });
         console.log(response.data);
+        setOutput(response.data)
     } catch (error) {
         console.error("Error fetching data:", error);
     }
