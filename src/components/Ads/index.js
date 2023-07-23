@@ -1,85 +1,138 @@
-import React, { useState } from 'react';
-import './index.css';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-function SocialPostGenerator() {
-    const [postContext, setPostContext] = useState('');
-    const [platform, setPlatform] = useState('Facebook');
-    const [language, setLanguage] = useState('');
-    const [tone, setTone] = useState('');
-    const [outputLength, setOutputLength] = useState('');
-    const [output, setOutput] = useState('');
+import { Player } from '@lottiefiles/react-lottie-player';
+import './index.css';
 
-    const handleSubmit = () => {
-        let dataToSend = {};
-    if (postContext !== '') dataToSend.postContext = postContext;
-    if (platform !== '') dataToSend.platform = platform;
-    if (language !== '') dataToSend.language = language;
-    if (tone !== '') dataToSend.tone = tone;
-    if (outputLength !== '') dataToSend.outputLength = outputLength;
-    console.log(dataToSend)
-   fetchData(dataToSend)
-        // Handle your output logic here...
+function SocialPostGenerator() {
+    const [inputData, setInputData] = useState({
+        postContext: '',
+        platform: 'Facebook',
+        language: 'en',
+        tone: 'formal',
+        outputLength: 'short'
+    });
+    const [output, setOutput] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const lottiePlayer = useRef(null);
+
+    const handleInputChange = (e) => {
+        setError(null);
+        const { name, value } = e.target;
+        setInputData((prevData) => ({ ...prevData, [name]: value }));
     };
-    const fetchData = async (dataToSend) => {
+
+    const LottiePlayerComponent = React.forwardRef((props, ref) => {
+        return (
+            <Player
+                ref={ref}
+                autoplay={true}
+                loop={true}
+                controls={true}
+                src="https://raw.githubusercontent.com/ra1111/shopifyreact/main/animation_lkey1cvo.json"
+                style={{ height: '900px', width: '900px' }} 
+            />
+        );
+    });
+
+    useEffect(() => {
+        if (loading && lottiePlayer.current) {
+            lottiePlayer.current.play();
+        } else if (lottiePlayer.current) {
+            lottiePlayer.current.pause();
+        }
+    }, [loading]);
+
+    const handleGenerate = async () => {
+        const { postContext } = inputData;
+        if (!postContext) {
+            setError("Please provide context for the post!");
+            return;
+        }
+
+        setLoading(true);
         try {
             const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onMessage", {
                 requestType: "ads",
-               data: dataToSend
-              
+                data: inputData
             });
-            console.log(response.data);
-            setOutput(response.data)
-        } catch (error) {
-            console.error("Error fetching data:", error);
+            setOutput(response.data);
+        } catch (err) {
+            setError("Error generating post");
         }
+        setLoading(false);
     };
 
     return (
         <div className="SocialPostGenerator">
+            {loading && (
+                <div className="loading-overlay">
+                    <LottiePlayerComponent ref={lottiePlayer} />
+                </div>
+            )}
+
             <div className="input-side">
-                <label>What is the Social post about</label>
+                <label>What is the Social post about?</label>
                 <textarea 
+                    name="postContext"
                     placeholder="Provide the context for the ad"
-                    value={postContext}
-                    onChange={e => setPostContext(e.target.value)}
+                    value={inputData.postContext}
+                    onChange={handleInputChange}
                     rows="5"
+                    disabled={loading}
                 />
 
                 <label>Select Platform</label>
-                <select value={platform} onChange={e => setPlatform(e.target.value)}>
+                <select 
+                    name="platform"
+                    value={inputData.platform}
+                    onChange={handleInputChange}
+                    disabled={loading}
+                >
                     <option value="Facebook">Facebook</option>
                     <option value="Twitter">Twitter</option>
                     <option value="Google">Google</option>
                 </select>
 
                 <label>Language</label>
-                <select value={language} onChange={e => setLanguage(e.target.value)}>
+                <select 
+                    name="language"
+                    value={inputData.language}
+                    onChange={handleInputChange}
+                    disabled={loading}
+                >
                     <option value="en">English</option>
-                    {/* Add other language options as needed */}
                 </select>
 
                 <label>Tone</label>
-                <select value={tone} onChange={e => setTone(e.target.value)}>
+                <select 
+                    name="tone"
+                    value={inputData.tone}
+                    onChange={handleInputChange}
+                    disabled={loading}
+                >
                     <option value="formal">Formal</option>
-                    {/* Add other tone options as needed */}
                 </select>
 
                 <label>Output Length</label>
-                <select value={outputLength} onChange={e => setOutputLength(e.target.value)}>
+                <select 
+                    name="outputLength"
+                    value={inputData.outputLength}
+                    onChange={handleInputChange}
+                    disabled={loading}
+                >
                     <option value="short">Short</option>
-                    {/* Add other length options as needed */}
                 </select>
 
-                <button onClick={handleSubmit}>Generate Post</button>
+                {error && <div className="error-message">{error}</div>}
+                <button onClick={handleGenerate} disabled={loading}>Generate Post</button>
             </div>
 
             <div className="output-side">
                 <textarea readOnly value={output} />
-                <button onClick={() => navigator.clipboard.writeText(output)}>Copy Post</button>
-                <div>
-                    <p>Characters: {output.length}</p>
-                    {/* <p>Words: {output.split(' ').length}</p> */}
-                </div>
+                <button onClick={() => navigator.clipboard.writeText(output)} disabled={loading}>
+                    Copy Post
+                </button>
             </div>
         </div>
     );

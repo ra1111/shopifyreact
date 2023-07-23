@@ -1,45 +1,123 @@
-import React, { useState } from 'react';
-import './index.css'
-const AIImprover = () => {
-    const [inputText, setInputText] = useState('');
-    const [outputText, setOutputText] = useState('');
-    const [languageTone, setLanguageTone] = useState('Neutral');
-    const [outputLength, setOutputLength] = useState('Medium');
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { Player } from '@lottiefiles/react-lottie-player';
+import './index.css';
 
-    const handleSubmit = async () => {
-        // Mock API call to an AI endpoint (replace with your actual call)
-        const improvedText = await improveText(inputText, languageTone, outputLength);
-        setOutputText(improvedText);
+function AIImprover() {
+    const [inputData, setInputData] = useState({
+        inputText: '',
+        languageTone: 'Neutral',
+        outputLength: 'Medium'
+    });
+    const [outputText, setOutputText] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    
+    const lottiePlayer = useRef(null);
+
+    const handleInputChange = (e) => {
+        setError(null);
+        const { name, value } = e.target;
+        setInputData((prevData) => ({ ...prevData, [name]: value }));
     };
 
-    // Replace this with your actual AI integration
-    const improveText = async (text, tone, length) => {
-        // Mock: Just return the text for this example
-        return `Improved Version of: ${text}`;
+    const LottiePlayerComponent = React.forwardRef((props, ref) => {
+        return (
+          <Player
+            ref={ref}
+            autoplay={true}
+            loop={true}
+            controls={true}
+            src="https://raw.githubusercontent.com/ra1111/shopifyreact/main/animation_lkey1cvo.json"
+            style={{ height: '900px', width: '900px' }}
+          ></Player>
+        );
+    });
+
+    useEffect(() => {
+        if (loading && lottiePlayer.current) {
+          lottiePlayer.current.play();
+        } else if (lottiePlayer.current) {
+          lottiePlayer.current.pause();
+        }
+    }, [loading]);
+
+    const fetchData = async () => {
+        const { inputText } = inputData;
+        if (!inputText) {
+            setError("Please input some text!");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onMessage", {
+                requestType: "writerAssitant",
+                data: inputData
+            });
+
+            setOutputText(response.data);
+
+            setInputData({
+                inputText: '',
+                languageTone: 'Neutral',
+                outputLength: 'Medium'
+            });
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            setError("An error occurred while improving text.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="AIImprover">
+            {loading && (
+                <div className="loading-overlay">
+                    <LottiePlayerComponent ref={lottiePlayer} />
+                </div>
+            )}
+            
             <div className="input-side">
                 <label>Write anything and AI will improve it:</label>
-                <textarea value={inputText}  rows="10" onChange={e => setInputText(e.target.value)}></textarea>
-                <select value={languageTone} onChange={e => setLanguageTone(e.target.value)}>
-                    {/* Your options for language tone */}
+                <textarea 
+                    name="inputText" 
+                    rows="10" 
+                    value={inputData.inputText} 
+                    onChange={handleInputChange}
+                    disabled={loading}
+                ></textarea>
+                <label>Tone of Language</label>
+                <select 
+                    name="languageTone" 
+                    value={inputData.languageTone} 
+                    onChange={handleInputChange}
+                    disabled={loading}
+                >
                     <option value="Neutral">Neutral</option>
                     <option value="Friendly">Friendly</option>
-                    {/* ... */}
                 </select>
-                <select value={outputLength} onChange={e => setOutputLength(e.target.value)}>
-                    {/* Your options for output length */}
+                <label>Output Length</label>
+                <select 
+                    name="outputLength" 
+                    value={inputData.outputLength} 
+                    onChange={handleInputChange}
+                    disabled={loading}
+                >
                     <option value="Short">Short</option>
                     <option value="Medium">Medium</option>
                     <option value="Long">Long</option>
                 </select>
-                <button onClick={handleSubmit}>Submit</button>
+                {error && <div className="error-message">{error}</div>}
+                <button onClick={fetchData} disabled={loading}>Submit</button>
             </div>
+
             <div className="output-side">
-                <textarea value={outputText} readOnly></textarea>
-                <button onClick={() => navigator.clipboard.writeText(outputText)}>Copy</button>
+                <textarea readOnly value={outputText} />
+                <button onClick={() => navigator.clipboard.writeText(outputText)} disabled={loading}>
+                    Copy Output
+                </button>
             </div>
         </div>
     );

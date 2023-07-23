@@ -1,97 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { Player } from '@lottiefiles/react-lottie-player';
 import './index.css';
 
 function ProductDescription() {
-  const [productNames, setProductNames] = useState(['']);
-  const [productDescription, setProductDescription] = useState('');
-  const [productTags, setProductTags] = useState('');
-  const [displayedTags, setDisplayedTags] = useState([]);
-  const [language, setLanguage] = useState('');
-  const [tone, setTone] = useState('');
-  const [outputLength, setOutputLength] = useState('');
-  const [output, setOutput] = useState('');
+    const [inputData, setInputData] = useState({
+        productNames: [''],
+        productDescription: '',
+        productTags: '',
+        language: '',
+        tone: '',
+        outputLength: ''
+    });
+    const [output, setOutput] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    
+    const lottiePlayer = useRef(null);
 
-  const handleNameChange = (index, value) => {
-    const newProductNames = [...productNames];
-    newProductNames[index] = value;
-    setProductNames(newProductNames);
-  };
+    const handleInputChange = (e, index) => {
+        setError(null);
+        const { name, value } = e.target;
 
-  const addProductNameField = () => {
-    setProductNames([...productNames, '']);
-  };
+        if (name === "productNames") {
+            const newProductNames = [...inputData.productNames];
+            newProductNames[index] = value;
+            setInputData((prevData) => ({ ...prevData, productNames: newProductNames }));
+        } else {
+            setInputData((prevData) => ({ ...prevData, [name]: value }));
+        }
+    };
 
-  const handleTagsChange = (value) => {
-    setProductTags(value);
-    const tagsArray = value.split(',').map(tag => tag.trim());
-    setDisplayedTags(tagsArray);
-  };
+    useEffect(() => {
+        if (loading && lottiePlayer.current) {
+            lottiePlayer.current.play();
+        } else if (lottiePlayer.current) {
+            lottiePlayer.current.pause();
+        }
+    }, [loading]);
 
-  const handleSubmit = () => {
-    // Handle your output logic here...
-  };
+    const fetchData = async () => {
+      const { productNames, productTags, language, tone,outputLength } = inputData;
 
-  return (
-    <div className="ProductDescription">
-      <div className="input-side">
-        {productNames.map((name, index) => (
-          <div key={index}>
-            <label>Product Name</label>
-            <input 
-              placeholder="Product Name"
-              value={name}
-              onChange={e => handleNameChange(index, e.target.value)}
-            />
-          </div>
-        ))}
-     
-        <label>Product Description</label>
-        <textarea 
-          placeholder="Product Description"
-          value={productDescription}
-          onChange={e => setProductDescription(e.target.value)}
-          rows="5"
-        />
+        // Mocking a simple API call and response
+        if (!inputData.productNames.some(name => name) && !inputData.productDescription) {
+            setError("Please provide at least one product name or a description!");
+            return;
+        }
+        setLoading(true);
 
-        <label>Product Tags (CSV)</label>
-        <input
-          placeholder="Enter tags separated by commas"
-          value={productTags}
-          onChange={e => handleTagsChange(e.target.value)}
-        />
-        <div className="tags-display">
-          {displayedTags.map((tag, index) => (
-            <span className="tag" key={index}>{tag}</span>
-          ))}
+        try {
+            // Mock API call
+            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onMessage", {
+                requestType: "productDescr",
+                data: inputData
+            });
+            setOutput(response.data);
+        } catch (err) {
+            console.error("Error fetching data:", err);
+            setError("An error occurred while generating the product description.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="ProductDescription">
+            {loading && (
+                <div className="loading-overlay">
+                    <Player
+                        ref={lottiePlayer}
+                        autoplay={true}
+                        loop={true}
+                        controls={true}
+                        src="https://raw.githubusercontent.com/ra1111/shopifyreact/main/animation_lkey1cvo.json"
+                        style={{ height: '900px', width: '900px' }}
+                    />
+                </div>
+            )}
+
+            <div className="input-side">
+                {inputData.productNames.map((name, index) => (
+                    <div key={index}>
+                        <label>Product Name {index + 1}</label>
+                        <input 
+                            name="productNames"
+                            value={name}
+                            onChange={(e) => handleInputChange(e, index)}
+                            disabled={loading}
+                        />
+                    </div>
+                ))}
+
+                <label>Product Description</label>
+                <textarea 
+                    name="productDescription"
+                    value={inputData.productDescription}
+                    onChange={handleInputChange}
+                    disabled={loading}
+                    rows="5"
+                />
+
+                <label>Product Tags (CSV)</label>
+                <input
+                    name="productTags"
+                    value={inputData.productTags}
+                    onChange={handleInputChange}
+                    disabled={loading}
+                />
+
+                <label>Language</label>
+                <select name="language" value={inputData.language} onChange={handleInputChange} disabled={loading}>
+                    <option value="en">English</option>
+                    {/* ... */}
+                </select>
+
+                <label>Tone</label>
+                <select name="tone" value={inputData.tone} onChange={handleInputChange} disabled={loading}>
+                    <option value="formal">Formal</option>
+                    {/* ... */}
+                </select>
+
+                <label>Output Length</label>
+                <select name="outputLength" value={inputData.outputLength} onChange={handleInputChange} disabled={loading}>
+                    <option value="short">Short</option>
+                    {/* ... */}
+                </select>
+
+                {error && <div className="error-message">{error}</div>}
+                <button onClick={fetchData} disabled={loading}>Write</button>
+            </div>
+
+            <div className="output-side">
+                <textarea readOnly style={{ height: '80%' }} value={output} />
+                <button onClick={() => navigator.clipboard.writeText(output)} disabled={loading}>
+                    Copy Output
+                </button>
+            </div>
         </div>
-
-        <label>Language</label>
-        <select value={language} onChange={e => setLanguage(e.target.value)}>
-          <option value="en">English</option>
-          {/* ... */}
-        </select>
-
-        <label>Tone</label>
-        <select value={tone} onChange={e => setTone(e.target.value)}>
-          <option value="formal">Formal</option>
-          {/* ... */}
-        </select>
-
-        <label>Output Length</label>
-        <select value={outputLength} onChange={e => setOutputLength(e.target.value)}>
-          <option value="short">Short</option>
-          {/* ... */}
-        </select>
-
-        <button onClick={handleSubmit}>Write</button>
-      </div>
-
-      <div className="output-side">
-        <textarea readOnly  style={{height: '80%'}} value={output} />
-        <button onClick={() => navigator.clipboard.writeText(output)}>Copy Output</button>
-      </div>
-    </div>
-  );
+    );
 }
 
 export default ProductDescription;
