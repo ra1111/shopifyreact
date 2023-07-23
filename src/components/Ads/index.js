@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './index.css';
+import axios from 'axios';
 function SocialPostGenerator() {
     const [postContext, setPostContext] = useState('');
     const [platform, setPlatform] = useState('Facebook');
@@ -9,7 +10,28 @@ function SocialPostGenerator() {
     const [output, setOutput] = useState('');
 
     const handleSubmit = () => {
+        let dataToSend = {};
+    if (postContext !== '') dataToSend.postContext = postContext;
+    if (platform !== '') dataToSend.platform = platform;
+    if (language !== '') dataToSend.language = language;
+    if (tone !== '') dataToSend.tone = tone;
+    if (outputLength !== '') dataToSend.outputLength = outputLength;
+    console.log(dataToSend)
+   fetchData(dataToSend)
         // Handle your output logic here...
+    };
+    const fetchData = async (dataToSend) => {
+        try {
+            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onMessage", {
+                requestType: "ads",
+               data: dataToSend
+              
+            });
+            console.log(response.data);
+            setOutput(response.data)
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
     };
 
     return (
@@ -56,7 +78,7 @@ function SocialPostGenerator() {
                 <button onClick={() => navigator.clipboard.writeText(output)}>Copy Post</button>
                 <div>
                     <p>Characters: {output.length}</p>
-                    <p>Words: {output.split(' ').length}</p>
+                    {/* <p>Words: {output.split(' ').length}</p> */}
                 </div>
             </div>
         </div>

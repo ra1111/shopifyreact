@@ -1,46 +1,98 @@
-import React, { useState } from 'react';
+import React, { useState,useRef,useEffect} from 'react';
 import './index.css';
 import axios from 'axios';
+import { Player } from '@lottiefiles/react-lottie-player';
 function EmailMarketing() {
   const [emailContext, setEmailContext] = useState('');
   const [language, setLanguage] = useState('');
   const [tone, setTone] = useState('');
   const [outputLength, setOutputLength] = useState('');
   const [output, setOutput] = useState('');
-
-  const handleSubmit = () => {
-    let dataToSend = {};
-    if (emailContext !== '') dataToSend.emailContext = emailContext;
-    if (language !== '') dataToSend.language = language;
-    if (tone !== '') dataToSend.tone = tone;
-    if (outputLength !== '') dataToSend.outputLength = outputLength;
-    if (output !== '') dataToSend.output = output;
-  console.log(fetchData(dataToSend))
-    // Handle your output logic here...
-  };
-  const fetchData = async (dataToSend) => {
-    try {
-        const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onMessage", {
-            requestType: "email",
-           data: dataToSend
-          
-        });
-        console.log(response.data);
-        setOutput(response.data)
-    } catch (error) {
-        console.error("Error fetching data:", error);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const lottiePlayer = useRef(null);
+  const handleEmailContextChange = (e) => {
+    setEmailContext(e.target.value);
+    if (e.target.value !== '') {
+      setError('');  // Clear error if user starts typing
     }
-};
+  }
+  const LottiePlayerComponent = React.forwardRef((props, ref) => {
+    return (
+      <Player
+        ref={ref}
+        autoplay={true}
+        loop={true}
+        controls={true}
+        src="https://raw.githubusercontent.com/ra1111/shopifyreact/main/animation_lkey1cvo.json"
+        style={{ height: '900px', width: '900px' }}
+      ></Player>
+    );
+  });
+  useEffect(() => {
+    if (isLoading && lottiePlayer.current) {
+      lottiePlayer.current.play();
+    } else if (lottiePlayer.current) {
+      lottiePlayer.current.pause();
+    }
+  }, [isLoading]);
+  const handleSubmit = () => {
+    if (emailContext === '') {
+      setError('Please enter the context for the email.');
+      return;
+    }
 
+    let dataToSend = {
+      emailContext: emailContext,
+      language: language,
+      tone: tone,
+      outputLength: outputLength,
+      output: output
+    };
+
+    fetchData(dataToSend);
+  };
+
+  const fetchData = async (dataToSend) => {
+    setIsLoading(true);
+    if (lottiePlayer.current) {
+      lottiePlayer.current.play();
+  }
+
+
+    try {
+      const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onMessage", {
+        requestType: "email",
+        data: dataToSend
+      });
+      setOutput(response.data);
+      setEmailContext('');
+      setLanguage('');
+      setTone('');
+      setOutputLength('');
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+      if (lottiePlayer.current) {
+        lottiePlayer.current.pause();
+    }
+    }
+  };
 
   return (
     <div className="EmailMarketing">
+          {isLoading && (
+        <div className="loading-overlay">
+   <LottiePlayerComponent ref={lottiePlayer} />
+        </div>
+      )}
       <div className="input-side">
         <label>What's the main topic of your email?</label>
         <textarea 
           placeholder="Email Context"
           value={emailContext}
-          onChange={e => setEmailContext(e.target.value)}
+          onChange={handleEmailContextChange}  // Use the handler to clear the error
           rows="10"
         />
 
@@ -62,12 +114,18 @@ function EmailMarketing() {
           {/* ... */}
         </select>
 
-        <button onClick={handleSubmit}>Write</button>
+        {error && <div className="error-message">{error}</div>} 
+
+        <button onClick={handleSubmit} disabled={isLoading}>
+          {isLoading ? 'Writing...' : 'Write'}
+        </button>
       </div>
 
       <div className="output-side">
         <textarea readOnly value={output} />
-        <button onClick={() => navigator.clipboard.writeText(output)}>Copy Output</button>
+        <button onClick={() => navigator.clipboard.writeText(output)} disabled={isLoading}>
+          Copy Output
+        </button>
       </div>
     </div>
   );
