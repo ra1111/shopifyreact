@@ -22,84 +22,24 @@ function ArticleGenerator() {
         const { name, value } = e.target;
         setInputData((prevData) => ({ ...prevData, [name]: value }));
     };
-
-    useEffect(() => {
-        if (loading && lottiePlayer.current) {
-            lottiePlayer.current.play();
-        } else if (lottiePlayer.current) {
-            lottiePlayer.current.pause();
-        }
-    }, [loading]);
-
-    const fetchArticle = async () => {
-        setLoading(true);
-        try {
-            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onArticle", {
-                title: title
-            });
-            setOutput(response.data);
-        } catch (err) {
-            console.error("Error fetching data:", err);
-            setError("An error occurred while generating the article.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchData = async () => {
-        if (!inputData.focusKeyword) {
-            setError("Please provide a focus keyword!");
-            return;
-        }
-        setLoading(true);
-        try {
-            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onTitle", {
-                ...inputData
-            });
-            setOutput(response.data);
-            setTitle(response.data);
-        } catch (err) {
-            console.error("Error fetching data:", err);
-            setError("An error occurred while generating the article title.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="ArticleGenerator">
-            {loading && (
-                <div className="loading-overlay">
-                    <Player
-                        ref={lottiePlayer}
-                        autoplay={true}
-                        loop={true}
-                        controls={true}
-                        src="https://raw.githubusercontent.com/ra1111/shopifyreact/main/animation_lkey1cvo.json"
-                        style={{ height: '900px', width: '900px' }}
-                    />
-                </div>
-            )}
-
-            {title && (
-                <div className="title-section">
-                    <h2>{title}</h2>
-                    <button onClick={fetchArticle} disabled={loading}>
-                        Generate Article
-                    </button>
-                </div>
-            )}
-
-            {output && (
-                <div className="output-section">
-                    <textarea readOnly value={output} style={{ height: '200px' }} />
-                    <button onClick={() => navigator.clipboard.writeText(output)} disabled={loading}>
-                        Copy Article
-                    </button>
-                </div>
-            )}
-
+    function LoadingOverlay({ src }) {
+        return (
+            <div className="loading-overlay">
+                <Player
+                    autoplay={true}
+                    loop={true}
+                    controls={true}
+                    src={src}
+                    style={{ height: '900px', width: '900px' }}
+                />
+            </div>
+        );
+    }
+    
+    function InputSection({ inputData, handleInputChange, fetchData, error, loading }) {
+        return (
             <div className="input-section">
+            
                 <div>
                     <label>Focus Keyword <span className="required">*</span></label>
                     <input 
@@ -144,12 +84,101 @@ function ArticleGenerator() {
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
                     </select>
-                </div>
+                
                 {error && <div className="error-message">{error}</div>}
                 <button onClick={fetchData} disabled={loading}>Generate</button>
             </div>
-        </div>
-    );
-}
+            </div>
+        );
+    }
+    
+    function TitleSection({ title, fetchArticle, loading }) {
+        return (
+            <div className="title-section">
+                <h2>{title}</h2>
+                <button onClick={fetchArticle} disabled={loading}>Generate Article</button>
+            </div>
+        );
+    }
+    
+    function OutputSection({ output, loading }) {
+        return (
+            <div className="output-section">
+                <textarea readOnly value={output} style={{ height: '200px' }} />
+                <button onClick={() => navigator.clipboard.writeText(output)} disabled={loading}>Copy Article</button>
+            </div>
+        );
+    }
+    
+   
+    useEffect(() => {
+        if (loading && lottiePlayer.current) {
+            lottiePlayer.current.play();
+        } else if (lottiePlayer.current) {
+            lottiePlayer.current.pause();
+        }
+    }, [loading]);
+
+    const fetchArticle = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onArticle", {
+                title: title
+            });
+            setOutput(response.data);
+        } catch (err) {
+            console.error("Error fetching data:", err);
+            setError("An error occurred while generating the article.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchData = async () => {
+        if (!inputData.focusKeyword) {
+            setError("Please provide a focus keyword!");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onTitle", {
+                ...inputData
+            });
+            setOutput(response.data);
+            setTitle(response.data);
+        } catch (err) {
+            console.error("Error fetching data:", err);
+            setError("An error occurred while generating the article title.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    
+        return (
+            <div className="ArticleGenerator">
+    
+                {loading && <LoadingOverlay src="https://raw.githubusercontent.com/ra1111/shopifyreact/main/animation_lkey1cvo.json" />}
+    
+                <InputSection 
+                    inputData={inputData}
+                    handleInputChange={handleInputChange}
+                    fetchData={fetchData}
+                    error={error}
+                    loading={loading}
+                />
+    
+                {title && <TitleSection title={title} fetchArticle={fetchArticle} loading={loading} />}
+    
+                {output && <OutputSection output={output} loading={loading} />}
+    
+            </div>
+        );
+    }
+    
+
+    
+
 
 export default ArticleGenerator;
