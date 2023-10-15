@@ -23,7 +23,6 @@ function ArticleGenerator() {
         setInputData((prevData) => ({ ...prevData, [name]: value }));
     };
 
-
     useEffect(() => {
         if (loading && lottiePlayer.current) {
             lottiePlayer.current.play();
@@ -31,14 +30,14 @@ function ArticleGenerator() {
             lottiePlayer.current.pause();
         }
     }, [loading]);
+
     const fetchArticle = async () => {
         setLoading(true);
-
         try {
-            const response = await axios.post("https://console.cloud.google.com/functions/details/us-central1/onArticle", {
-                title: title  // Send the title as payload to the API
+            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onArticle", {
+                title: title
             });
-            setOutput(response.data);  // assuming response.data is the article
+            setOutput(response.data);
         } catch (err) {
             console.error("Error fetching data:", err);
             setError("An error occurred while generating the article.");
@@ -46,19 +45,19 @@ function ArticleGenerator() {
             setLoading(false);
         }
     };
+
     const fetchData = async () => {
         if (!inputData.focusKeyword) {
             setError("Please provide a focus keyword!");
             return;
         }
         setLoading(true);
-
         try {
-            const response = await axios.post("https://console.cloud.google.com/functions/details/us-central1/onTitle", {
+            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onTitle", {
                 ...inputData
             });
             setOutput(response.data);
-            setTitle(response.data); 
+            setTitle(response.data);
         } catch (err) {
             console.error("Error fetching data:", err);
             setError("An error occurred while generating the article title.");
@@ -82,7 +81,25 @@ function ArticleGenerator() {
                 </div>
             )}
 
-            <div className="input-side">
+            {title && (
+                <div className="title-section">
+                    <h2>{title}</h2>
+                    <button onClick={fetchArticle} disabled={loading}>
+                        Generate Article
+                    </button>
+                </div>
+            )}
+
+            {output && (
+                <div className="output-section">
+                    <textarea readOnly value={output} style={{ height: '200px' }} />
+                    <button onClick={() => navigator.clipboard.writeText(output)} disabled={loading}>
+                        Copy Article
+                    </button>
+                </div>
+            )}
+
+            <div className="input-section">
                 <div>
                     <label>Focus Keyword <span className="required">*</span></label>
                     <input 
@@ -101,29 +118,26 @@ function ArticleGenerator() {
                         disabled={loading}
                     />
                 </div>
-                {/* Add other input fields similarly ... */}
                 <div>
                     <label>Desired Sentiment</label>
                     <select name="desiredSentiment" value={inputData.desiredSentiment} onChange={handleInputChange} disabled={loading}>
                         <option value="Positive">Positive</option>
                         <option value="Negative">Negative</option>
-                        {/* ... */}
                     </select>
                 </div>
                 <div>
-    <label>Power Word</label>
-    <select name="powerWordType" value={inputData.powerWordType} onChange={handleInputChange} disabled={loading}>
-        <option value="Greed and FOMO">Greed and FOMO</option>
-        <option value="Curiosity">Curiosity</option>
-        <option value="Ease and Convenience">Ease and Convenience</option>
-        <option value="Desire and Lust">Desire and Lust</option>
-        <option value="Vanity and Bragging">Vanity and Bragging</option>
-        <option value="Trust">Trust</option>
-        <option value="Anger">Anger</option>
-        <option value="Fear">Fear</option>
-    </select>
-</div>
-
+                    <label>Power Word</label>
+                    <select name="powerWordType" value={inputData.powerWordType} onChange={handleInputChange} disabled={loading}>
+                        <option value="Greed and FOMO">Greed and FOMO</option>
+                        <option value="Curiosity">Curiosity</option>
+                        <option value="Ease and Convenience">Ease and Convenience</option>
+                        <option value="Desire and Lust">Desire and Lust</option>
+                        <option value="Vanity and Bragging">Vanity and Bragging</option>
+                        <option value="Trust">Trust</option>
+                        <option value="Anger">Anger</option>
+                        <option value="Fear">Fear</option>
+                    </select>
+                </div>
                 <div>
                     <label>Include Number</label>
                     <select name="includeNumber" value={inputData.includeNumber} onChange={handleInputChange} disabled={loading}>
@@ -134,32 +148,6 @@ function ArticleGenerator() {
                 {error && <div className="error-message">{error}</div>}
                 <button onClick={fetchData} disabled={loading}>Generate</button>
             </div>
-
-            <div className="output-side">
-                <textarea readOnly style={{ height: '80%' }} value={output} />
-                <button onClick={() => navigator.clipboard.writeText(output)} disabled={loading}>
-                    Copy Output
-                </button>
-            </div>
-            {title && (
-                <div className="title-section">
-                    <h2>Generated Title:</h2>
-                    <p>{title}</p>
-                    <button onClick={fetchArticle} disabled={loading}>
-                        Generate Article
-                    </button>
-                </div>
-            )}
-
-            {output && (
-                <div className="output-section">
-                    <h2>Generated Article:</h2>
-                    <textarea readOnly value={output} style={{ height: '80%' }} />
-                    <button onClick={() => navigator.clipboard.writeText(output)} disabled={loading}>
-                        Copy Article
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
