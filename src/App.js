@@ -25,6 +25,7 @@ function App() {
         {currentSection === SECTIONS.PRODUCT_NAME && <ProductNameGenerator />}
         {currentSection==SECTIONS.PRODUCT_BENEFITS&&<ProductBenefitGenerator/>}
         {currentSection === SECTIONS.EMAIL_MARKET && <EmailMarketing />}
+        {currentSection === SECTIONS.ARTIKLE && <ArticleGenerator />}
         {currentSection === SECTIONS.ADS && <SocialPostGenerator />}
         {currentSection === SECTIONS.WRITER_ASSITANT && <AIImprover />}
         {currentSection===SECTIONS.SEO_TITLE&&<ArticleGenerator/>}

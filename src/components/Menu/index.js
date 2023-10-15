@@ -9,6 +9,7 @@ export const SECTIONS = {
   ADS:"Ads",
   WRITER_ASSITANT:'Writer Aisstant',
   SEO_DESCRIPTION:'SEO Description',
+  ARTIKLE:'SEO Article'
 };
 
 function Menu({ currentSection, onSectionChange }) {
