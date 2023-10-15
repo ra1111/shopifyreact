@@ -21,15 +21,15 @@ function App() {
       <Menu currentSection={currentSection} onSectionChange={setCurrentSection} />
 
       <div className="content">
-        {currentSection === SECTIONS.PRODUCT_DESCRIPTION && <ProductDescription />}
+        {/* {currentSection === SECTIONS.PRODUCT_DESCRIPTION && <ProductDescription />}
         {currentSection === SECTIONS.PRODUCT_NAME && <ProductNameGenerator />}
         {currentSection==SECTIONS.PRODUCT_BENEFITS&&<ProductBenefitGenerator/>}
         {currentSection === SECTIONS.EMAIL_MARKET && <EmailMarketing />}
         {currentSection === SECTIONS.ARTIKLE && <ArticleGenerator />}
         {currentSection === SECTIONS.ADS && <SocialPostGenerator />}
-        {currentSection === SECTIONS.WRITER_ASSITANT && <AIImprover />}
+        {currentSection === SECTIONS.WRITER_ASSITANT && <AIImprover />} */}
         {currentSection===SECTIONS.SEO_TITLE&&<ArticleGenerator/>}
-        {currentSection===SECTIONS.SEO_DESCRIPTION&&<SEODescriptionGenerator/>}
+        {/* {currentSection===SECTIONS.SEO_DESCRIPTION&&<SEODescriptionGenerator/>} */}
         {/* Render other components based on the currentSection */}
       </div>
     </div>
