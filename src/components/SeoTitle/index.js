@@ -14,7 +14,7 @@ function ArticleGenerator() {
     const [output, setOutput] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    
+    const [title, setTitle] = useState('');
     const lottiePlayer = useRef(null);
 
     const handleInputChange = (e) => {
@@ -23,6 +23,7 @@ function ArticleGenerator() {
         setInputData((prevData) => ({ ...prevData, [name]: value }));
     };
 
+
     useEffect(() => {
         if (loading && lottiePlayer.current) {
             lottiePlayer.current.play();
@@ -30,7 +31,21 @@ function ArticleGenerator() {
             lottiePlayer.current.pause();
         }
     }, [loading]);
+    const fetchArticle = async () => {
+        setLoading(true);
 
+        try {
+            const response = await axios.post("https://console.cloud.google.com/functions/details/us-central1/onArticle", {
+                title: title  // Send the title as payload to the API
+            });
+            setOutput(response.data);  // assuming response.data is the article
+        } catch (err) {
+            console.error("Error fetching data:", err);
+            setError("An error occurred while generating the article.");
+        } finally {
+            setLoading(false);
+        }
+    };
     const fetchData = async () => {
         if (!inputData.focusKeyword) {
             setError("Please provide a focus keyword!");
@@ -43,6 +58,7 @@ function ArticleGenerator() {
                 ...inputData
             });
             setOutput(response.data);
+            setTitle(response.data); 
         } catch (err) {
             console.error("Error fetching data:", err);
             setError("An error occurred while generating the article title.");
@@ -125,6 +141,25 @@ function ArticleGenerator() {
                     Copy Output
                 </button>
             </div>
+            {title && (
+                <div className="title-section">
+                    <h2>Generated Title:</h2>
+                    <p>{title}</p>
+                    <button onClick={fetchArticle} disabled={loading}>
+                        Generate Article
+                    </button>
+                </div>
+            )}
+
+            {output && (
+                <div className="output-section">
+                    <h2>Generated Article:</h2>
+                    <textarea readOnly value={output} style={{ height: '80%' }} />
+                    <button onClick={() => navigator.clipboard.writeText(output)} disabled={loading}>
+                        Copy Article
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
