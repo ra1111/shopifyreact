@@ -8,7 +8,7 @@ export const SECTIONS = {
   EMAIL_MARKET:'EmailMarketing',
   ADS:"Ads",
   WRITER_ASSITANT:'Writer Aisstant',
-  SEO_DESCRIPTION:'SEO Description'
+  SEO_DESCRIPTION:'SEO Description',
 };
 
 function Menu({ currentSection, onSectionChange }) {
