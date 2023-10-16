@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/shopifyreact/static/css/main.4ac9b95c.css",
-    "main.js": "/shopifyreact/static/js/main.1a790c1c.js",
+    "main.js": "/shopifyreact/static/js/main.85c1683a.js",
     "static/js/787.69e76c70.chunk.js": "/shopifyreact/static/js/787.69e76c70.chunk.js",
     "index.html": "/shopifyreact/index.html",
     "main.4ac9b95c.css.map": "/shopifyreact/static/css/main.4ac9b95c.css.map",
-    "main.1a790c1c.js.map": "/shopifyreact/static/js/main.1a790c1c.js.map",
+    "main.85c1683a.js.map": "/shopifyreact/static/js/main.85c1683a.js.map",
     "787.69e76c70.chunk.js.map": "/shopifyreact/static/js/787.69e76c70.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.4ac9b95c.css",
-    "static/js/main.1a790c1c.js"
+    "static/js/main.85c1683a.js"
   ]
 }
