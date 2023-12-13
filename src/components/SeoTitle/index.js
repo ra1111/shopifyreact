@@ -12,18 +12,37 @@ function ArticleGenerator() {
         powerWordType: 'Greed and FOMO',
         includeNumber: 'Yes'
     });
+    const [sections, setSections] = useState({});
     const [output, setOutput] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [title, setTitle] = useState('');
     const [socialMediaOutput, setSocialMediaOutput] = useState('');
-
+    const [combinedContent, setCombinedContent] = useState('');
     const lottiePlayer = useRef(null);
 
     const handleInputChange = (newData) => {
         setError(null);
         setInputData(newData);
     };
+    useEffect(() => {
+        const combined = Object.values(sections).join('\n\n');
+        setCombinedContent(combined);
+    }, [sections]);
+
+    const copyToClipboard = () => {
+        const contentToCopy = `${title}\n\n${combinedContent}`;
+        navigator.clipboard.writeText(contentToCopy)
+            .then(() => {
+                // Handle successful copy
+                alert('Content copied to clipboard!');
+            })
+            .catch(err => {
+                // Handle copy error
+                console.error('Failed to copy text: ', err);
+            });
+    };
+    
     
     function LoadingOverlay({ src }) {
         return (
@@ -172,22 +191,97 @@ function ArticleGenerator() {
             lottiePlayer.current.pause();
         }
     }, [loading]);
-
-    const fetchArticle = async () => {
+    const generateSectionContent = async (sectionTitle) => {
         setLoading(true);
         try {
-            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onArticle", {
-                title: title
+            const response = await axios.post("https://us-central1-foresight-club.cloudfunctions.net/onSection", {
+                Title: sectionTitle
+            });
+            setSections(prevSections => ({
+                ...prevSections,
+                [sectionTitle]: response.data
+            }));
+        } catch (error) {
+            console.error("Error generating content for section:", error);
+            setError("An error occurred while generating content.");
+        } finally {
+            setLoading(false);
+        }
+    };
+    const generateAllSections = async () => {
+        setLoading(true);
+        try {
+            const sectionTitles = Object.keys(sections);
+            for (const title of sectionTitles) {
+                if (!sections[title]) { // Check if content already exists
+                    await generateSectionContent(title); // Generate content for this section
+                }
+            }
+        } catch (error) {
+            console.error("Error generating content for all sections:", error);
+            setError("An error occurred while generating content.");
+        } finally {
+            setLoading(false);
+        }
+    };
+    const fetchArticle = async () => {
+        setLoading(true);
+        console.log(title)
+        try {
+            const response = await axios.post("http://us-central1-foresight-club.cloudfunctions.net/onArticle", {
+                Title: title
             });
             setOutput(response.data);
-        } catch (err) {
-            console.error("Error fetching data:", err);
+            parseContent(response.data)
+            console.log(response)
+        } catch (error) {
+            if (error.response) {
+                
+                // The request was made and the server responded with a status code
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+              } else if (error.request) {
+                // The request was made but no response was received
+                console.log(error.request);
+              } else {
+                // Something happened in setting up the request
+                console.log('Error', error.message);
+              }
             setError("An error occurred while generating the article.");
         } finally {
             setLoading(false);
         }
     };
+    const parseContent = (content) => {
+        const sectionPattern = /(?:\n|^)([IVXLCDM]+\..+?)(?=\n[IVXLCDM]+\..+|\n*$)/gs;
+        const parsedSections = {};
+        let match;
+    
+        while ((match = sectionPattern.exec(content)) !== null) {
+            const [fullMatch, sectionTitle] = match;
+            parsedSections[sectionTitle.trim()] = fullMatch.replace(sectionTitle, '').trim();
+        }
+    
+        setSections(parsedSections);
+    };
+    const [editingSections, setEditingSections] = useState({});
 
+    // Function to toggle edit mode
+    const toggleEditMode = (sectionTitle) => {
+        setEditingSections(prevEditingSections => ({
+            ...prevEditingSections,
+            [sectionTitle]: !prevEditingSections[sectionTitle]
+        }));
+    };
+
+    // Function to update section content
+    const updateSectionContent = (sectionTitle, newContent) => {
+        setSections(prevSections => ({
+            ...prevSections,
+            [sectionTitle]: newContent
+        }));
+    };
     const fetchData = async (dataToFetch) => {
         if (!dataToFetch.focusKeyword) {
             setError("Please provide a focus keyword!");
@@ -210,7 +304,27 @@ function ArticleGenerator() {
         }
     };
     
+    const regenerateSectionContent = async (sectionTitle) => {
+        // Call your API or function to regenerate content
+        // Update the sections state with the new content
+    };
 
+    // Function to handle section content editing
+    const editSectionContent = (sectionTitle, newContent) => {
+        setSections(prevSections => ({
+            ...prevSections,
+            [sectionTitle]: newContent
+        }));
+    };
+
+    // Function to handle section deletion
+    const deleteSection = (sectionTitle) => {
+        setSections(prevSections => {
+            const newSections = { ...prevSections };
+            delete newSections[sectionTitle];
+            return newSections;
+        });
+    };
 
     
 
@@ -227,17 +341,59 @@ return (
         <div className="output-view">
             {title && (
                 <div className="title-section">
-                    <h2>{title}</h2>
-                    <button onClick={fetchArticle} disabled={loading}>Generate Article</button>
+                   <Markdown>{title}</Markdown>
+                    <button onClick={fetchArticle} disabled={loading}>Generate Outline</button>
                 </div>
             )}
-            {output && (
+            {/* {output && (
                 <div className="output-section">
                     <Markdown>{output}</Markdown>
                     <button onClick={() => navigator.clipboard.writeText(output)} disabled={loading}>Copy Article</button>
                     <button onClick={generateSocialPost} disabled={loading}>Generate Social Post</button>
                 </div>
-            )}
+            )} */}
+             <div className="sections-container">
+             {Object.entries(sections).map(([sectionTitle, sectionContent]) => (
+  <div key={sectionTitle} className="section">
+    <Markdown>{sectionTitle}</Markdown>
+    {editingSections[sectionTitle] ? (
+      <>
+        {/* <textarea
+          value={sectionContent}
+          onChange={(e) => updateSectionContent(sectionTitle, e.target.value)}
+        /> */}
+             <button onClick={() => deleteSection(sectionTitle)}>
+          Delete
+        </button>
+        <button onClick={() => toggleEditMode(sectionTitle)}>
+          Save
+        </button>
+      </>
+    ) : (
+      <>
+        {/* <Markdown className="section-content">{sectionContent}</Markdown> */}
+        {/* <button onClick={() => toggleEditMode(sectionTitle)}>
+          Edit
+        </button> */}
+        {/* <button onClick={() => deleteSection(sectionTitle)}>
+          Delete
+        </button> */}
+      </>
+    )}
+  </div>
+))}
+
+   <div className="generate-all-button-container">
+                <button onClick={generateAllSections} disabled={loading}>
+                    Generate All Sections
+                </button>
+            </div>
+ <div className="combined-content">
+                <Markdown className="article-content">{combinedContent}</Markdown>
+                <button onClick={copyToClipboard} disabled={!combinedContent}>Copy Article</button>
+            </div>
+        </div>
+        </div>
             {socialMediaOutput && (
                 <div className="social-output-section">
                     <Markdown>{socialMediaOutput}</Markdown>
@@ -245,7 +401,8 @@ return (
                 </div>
             )}
         </div>
-    </div>
+    
+
 );
     }
     
